@@ -4,6 +4,7 @@ import random
 from abc import ABC
 from enum import Enum
 from itertools import zip_longest
+from pygame import mixer
 
 
 class Direction(Enum):
@@ -59,6 +60,17 @@ class Board(ABC):
         self.ships_list = []
         self.hits_list = []
         self.misses_list = []
+        mixer.init()
+
+    def play_sound_add_ship(self):
+        mixer.music.load("sound_1.mp3")
+        mixer.music.play()
+        #mixer.music.stop()
+
+    def play_sound_shoot(self):
+        mixer.music.load("sound_explor_1.mp3")
+        mixer.music.play()
+        #mixer.music.stop()
 
     def is_valid(self, ship):
         """Checks whether a ship would be a valid placement on the board"""
@@ -73,6 +85,7 @@ class Board(ABC):
     def add_ship(self, ship: Ship):
         """Adds a ship to the board"""
         if self.is_valid(ship):
+            self.play_sound_add_ship()
             self.ships_list.append(ship)
             return True
         else:
@@ -117,6 +130,7 @@ class Board(ABC):
         for ship in self.ships_list:
             for ship_coordinate in ship.coordinate_list:
                 if (x, y) == ship_coordinate:
+                    self.play_sound_shoot()
                     self.hits_list.append((x, y))
                     return True
 
@@ -235,11 +249,11 @@ class AIBoard(Board):
 class Display:
     """Class to handle PyGame input and output"""
     colours = {
-        "water": pygame.color.Color("blue"),
+        "water": pygame.color.Color("skyblue"),
         "ship": pygame.color.Color("gray"),
         "hit": pygame.color.Color("red"),
         "miss": pygame.color.Color("lightcyan"),
-        "background": pygame.color.Color("navy"),
+        "background": pygame.color.Color("lightyellow"),
         "text": pygame.color.Color("white")
     }
 
@@ -272,18 +286,27 @@ class Display:
         for y in range(self.board_size):
             for x in range(self.board_size):
 
+                temp_color = (255,255,255)
                 if upper_board is not None:
                     pygame.draw.rect(self.screen, upper_colours[y][x],
                                      [self.margin + x * self.cell_size,
                                       self.margin + y * self.cell_size,
-                                      self.cell_size, self.cell_size])
+                                      self.cell_size, self.cell_size], 0)
+                    pygame.draw.rect(self.screen, temp_color,
+                                     [self.margin + x * self.cell_size,
+                                      self.margin + y * self.cell_size,
+                                      self.cell_size, self.cell_size], 1)
 
                 if lower_board is not None:
                     offset = self.margin * 2 + self.board_size * self.cell_size
                     pygame.draw.rect(self.screen, lower_colours[y][x],
                                      [self.margin + x * self.cell_size,
                                       offset + y * self.cell_size,
-                                      self.cell_size, self.cell_size])
+                                      self.cell_size, self.cell_size], 0)
+                    pygame.draw.rect(self.screen, temp_color,
+                                     [self.margin + x * self.cell_size,
+                                      offset + y * self.cell_size,
+                                      self.cell_size, self.cell_size], 1)
 
     def get_input(self):
         """Converts MouseEvents into board corrdinates, for input"""
