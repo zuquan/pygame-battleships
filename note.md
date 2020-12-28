@@ -1,3 +1,11 @@
+# notes
+
+# to do list
+1. uniq the coordinate list
+
+
+
+
 
 ## reference
 

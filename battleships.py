@@ -95,10 +95,23 @@ class Board(ABC):
         """Removes a ship from the board"""
         self.ships_list.remove(ship)
 
+    def space_from_coord_list(self, c_list):
+        #print("given c_list is {l}".format(l=c_list))
+        rs1 = [(a, b+i) for (a, b) in c_list for i in [1, -1]]
+        rs2 = [(a+i, b) for (a, b) in c_list for i in [1, -1]]
+        rs3 = c_list + rs1 + rs2
+        rs = list(set(rs3))
+        #print("rs1 is {l}".format(l=rs1))
+        #print("rs2 is {l}".format(l=rs2))
+        #print("return is {l}".format(l=rs))
+        #print("r3 is {l}".format(l=rs3))
+        return rs
+
     def ships_overlap(self, ship1, ship2):
         """Checks whether two ships overlap"""
         for ship1_coord in ship1.coordinate_list:
-            for ship2_coord in ship2.coordinate_list:
+            #for ship2_coord in ship2.coordinate_list:
+            for ship2_coord in self.space_from_coord_list(ship2.coordinate_list):
                 if ship1_coord == ship2_coord:
                     return True
         return False
@@ -257,7 +270,7 @@ class Display:
         "text": pygame.color.Color("white")
     }
 
-    def __init__(self, board_size=10, cell_size=30, margin=15):
+    def __init__(self, board_size=7, cell_size=30, margin=15):
         self.board_size = board_size
         self.cell_size = cell_size
         self.margin = margin
@@ -341,14 +354,16 @@ class Display:
     @classmethod
     def close(cls):
         pygame.display.quit()
-        pygame.quit()
+        #pygame.quit()
 
 
 class Game:
     """The overall class to control the game"""
 
-    def __init__(self, display, size=10, ship_sizes=[6, 4, 3, 3, 2]):
+    def __init__(self, display, size=7, ship_sizes=[6, 4, 3, 3, 2]):
         """Sets up the game by generating two Boards"""
+        print("------- size is {s}".format(s=size))
+        print("------- ship is {s}".format(s=ship_sizes))
         self.display = display
         self.board_size = size
         self.ai_board = AIBoard(size, ship_sizes)
@@ -393,12 +408,27 @@ class Game:
         else:
             return False
 
+class TeamF:
+    def __init__(self, board_size=7, ship_sizes=[2]):
+        boardSize = 10
+        #shipSizes = [6, 4, 3, 3, 2]
+        shipSizes = [2]
+        d = Display(boardSize)
+        #Game(d).play()
+        Game(d, boardSize, [2]).play()
+        d.close()
+
+
 
 if __name__ == "__main__":
     while True:
-        d = Display()
-        Game(d).play()
-        # Game(d, 2, [1,1]).play()
+        boardSize = 5
+        shipSizes = [3, 2]
+        #shipSizes = [1, 2]
+        d = Display(boardSize)
+        #Game(d).play()
+        #Game(d, boardSize, [2]).play()
+        Game(d, boardSize, shipSizes).play()
         d.close()
 
         response = input("Replay? y/n: ").lower()
@@ -407,3 +437,4 @@ if __name__ == "__main__":
         if response == 'n':
             print("Thanks, goodbye.")
             break
+    pygame.quit()
